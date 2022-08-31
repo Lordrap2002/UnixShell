@@ -23,8 +23,6 @@ int main(){
     while(flag){
         int size = 0;
         char c, param[10][20];
-        char *const ar[] = {param[0], param[1], param[2], param[3], param[4] , param[5],
-                            param[6], param[7], param[8], param[9], NULL};
         printf("prompt>");
         fflush(stdout);
         scanf("%c", &c);
@@ -81,6 +79,11 @@ int main(){
                     history = fopen("history.dat", "ab");
                     fwrite(param, sizeof(param), 1, history);
                     fclose(history);
+                    char *const ar[] = {(size ? param[0] : NULL), (size > 1 ? param[1] : NULL),
+                                        (size > 2 ? param[2] : NULL), (size > 3 ? param[3] : NULL),
+                                        (size > 4 ? param[4] : NULL) , (size > 5 ? param[5] : NULL),
+                                        (size > 6 ? param[6] : NULL), (size > 7 ? param[7] : NULL), 
+                                        (size > 8 ? param[8] : NULL), (size > 9 ? param[9] : NULL), NULL};
                     execvp(ar[0], ar);
                     printf("fin hijo\n");
                     return 0;
