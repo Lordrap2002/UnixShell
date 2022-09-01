@@ -3,6 +3,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
+#include <stdlib.h>
 
 int abrirHistorial(){
     int record;
@@ -83,6 +85,36 @@ int main(){
                 }else{
                     //hijo
                     printf("hijo\n");
+                    if(!strcmp(param[size - 1], "&")){
+                        size--;
+                    }
+                    if(!strcmp(param[1], ">")){
+                        size -= 2;
+                        char file[22] = "./";
+                        strcat(file, param[2]);
+                        int fd = open(file, O_WRONLY | O_CREAT);
+                        if(fd < 0){
+                            printf("Unable to open file.");
+                            return 0;
+                        }
+                        if(dup2(fd, STDOUT_FILENO) < 0) {
+                            printf("Unable to duplicate file descriptor.");
+                            return 0;
+                        }
+                    }else if(!strcmp(param[1], "<")){
+                        size -= 2;
+                        char file[22] = "./";
+                        strcat(file, param[2]);
+                        int fd = open(file, O_RDONLY);
+                        if(fd < 0){
+                            printf("Unable to open file.\n");
+                            return 0;
+                        }
+                        if(dup2(fd, STDIN_FILENO) < 0) {
+                            printf("Unable to duplicate file descriptor.\n");
+                            return 0;
+                        }
+                    }
                     char *const arg[] = {(size ? param[0] : NULL), (size > 1 ? param[1] : NULL),
                                         (size > 2 ? param[2] : NULL), (size > 3 ? param[3] : NULL),
                                         (size > 4 ? param[4] : NULL) , (size > 5 ? param[5] : NULL),
