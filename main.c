@@ -88,7 +88,7 @@ int main(){
                 //crear hijo
                 pid = fork();
                 if(pid < 0){
-                    printf("Error al crear el hijo");
+                    printf("Error al crear el hijo\n");
                     return 0;
                 }else if(pid > 0){
                     //papá
@@ -108,6 +108,7 @@ int main(){
                 }else{
                     //hijo
                     printf("hijo\n");
+                    int pid2 = 1;
                     if(out){
                         size -= 2;
                         char file[22] = "./";
@@ -134,14 +135,43 @@ int main(){
                             printf("Unable to duplicate file descriptor.\n");
                             return 0;
                         }
+                    }else if(tube){
+                        int tubo[2];
+                        pipe(tubo);
+                        /*
+                        if(dup2(fd, STDOUT_FILENO) < 0) {
+                            printf("Unable to duplicate file descriptor.");
+                            return 0;
+                        }*/
+                        pid2 = fork();
+                        if(pid2 < 0){
+                            printf("Error al crear el hijo del hijo\n");
+                            return 0;
+                        }
                     }
-                    char *const arg[] = {(size ? param[0] : NULL), (size > 1 ? param[1] : NULL),
-                                        (size > 2 ? param[2] : NULL), (size > 3 ? param[3] : NULL),
-                                        (size > 4 ? param[4] : NULL) , (size > 5 ? param[5] : NULL),
-                                        (size > 6 ? param[6] : NULL), (size > 7 ? param[7] : NULL), 
-                                        (size > 8 ? param[8] : NULL), (size > 9 ? param[9] : NULL),
-                                        NULL};
-                    execvp(arg[0], arg);
+                    if(pid2){
+                        printf("hijo pipe\n");
+                        if(tube){
+                            size = tube;
+                        }
+                        char *const arg[] = {(size ? param[0] : NULL), (size > 1 ? param[1] : NULL),
+                                            (size > 2 ? param[2] : NULL), (size > 3 ? param[3] : NULL),
+                                            (size > 4 ? param[4] : NULL) , (size > 5 ? param[5] : NULL),
+                                            (size > 6 ? param[6] : NULL), (size > 7 ? param[7] : NULL), 
+                                            (size > 8 ? param[8] : NULL), (size > 9 ? param[9] : NULL),
+                                            NULL};
+                        wait(NULL);
+                        execvp(arg[0], arg);
+                    }else{
+                        size -= tube - 1;
+                        printf("hijo del hijo pipe\n");
+                        char *const arg[] = {(size ? param[1 + tube] : NULL), (size > 1 ? param[2 + tube] : NULL),
+                                            (size > 2 ? param[3 + tube] : NULL), (size > 3 ? param[4 + tube] : NULL),
+                                            (size > 4 ? param[5 + tube] : NULL) , (size > 5 ? param[6 + tube] : NULL),
+                                            (size > 6 ? param[7 + tube] : NULL), (size > 7 ? param[8 + tube] : NULL), 
+                                            (size > 8 ? param[9 + tube] : NULL), NULL};
+                        execvp(arg[0], arg);
+                    }
                     printf("fin hijo\n");
                     return 0;
                 }
