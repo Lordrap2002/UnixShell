@@ -1,0 +1,9 @@
+3Makefile
+9README.md
+5history.dat
+log.txt
+7main.c
+1main.o
+9out.txt
+2prueba.txt
+3unixshell

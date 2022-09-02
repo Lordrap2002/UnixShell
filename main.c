@@ -19,11 +19,11 @@ int abrirHistorial(){
 }
 
 int main(){
-    int flag = 1, pid, i, tube[2], record;
+    int flag = 1, pid, i, record, tube, in, out, size, back;
     FILE *history, *log;
     record = abrirHistorial();
     while(flag){
-        int size = 0;
+        size = tube = in = out = back = 0;
         char c, param[10][20];
         printf("prompt>");
         fflush(stdout);
@@ -36,7 +36,18 @@ int main(){
                 scanf("%c", &c);
             }
             if(i){
-                param[size++][i] = '\0';
+                param[size][i] = '\0';
+                if(!strcmp("&", param[size])){
+                    size--;
+                    back++;
+                }else if(!strcmp("<", param[size])){
+                    in = size;
+                }else if(!strcmp(">", param[size])){
+                    out = size;
+                }else if(!strcmp("|", param[size])){
+                    tube = size;
+                }
+                size++;
             }
             if(c - '\n'){
                 scanf("%c", &c);
@@ -55,6 +66,18 @@ int main(){
                         printf("prompt>");
                         for(i = 0; i < size; i++){
                             printf("%s ", param[i]);
+                            if(!strcmp("&", param[i])){
+                                back++;
+                            }else if(!strcmp("<", param[i])){
+                                in = i;
+                            }else if(!strcmp(">", param[i])){
+                                out = i;
+                            }else if(!strcmp("|", param[i])){
+                                tube = i;
+                            }
+                        }
+                        if(back){
+                            size--;
                         }
                         printf("\n");
                     }else{
@@ -77,7 +100,7 @@ int main(){
                     fwrite(param, sizeof(param), 1, history);
                     fclose(history);
                     //esperar si hay &
-                    if(strcmp(param[size - 1], "&")){
+                    if(!back){
                         printf("espero\n");
                         wait(NULL);
                     }
@@ -85,13 +108,10 @@ int main(){
                 }else{
                     //hijo
                     printf("hijo\n");
-                    if(!strcmp(param[size - 1], "&")){
-                        size--;
-                    }
-                    if(!strcmp(param[1], ">")){
+                    if(out){
                         size -= 2;
                         char file[22] = "./";
-                        strcat(file, param[2]);
+                        strcat(file, param[out + 1]);
                         int fd = open(file, O_WRONLY | O_CREAT);
                         if(fd < 0){
                             printf("Unable to open file.");
@@ -101,10 +121,10 @@ int main(){
                             printf("Unable to duplicate file descriptor.");
                             return 0;
                         }
-                    }else if(!strcmp(param[1], "<")){
+                    }else if(in){
                         size -= 2;
                         char file[22] = "./";
-                        strcat(file, param[2]);
+                        strcat(file, param[in + 1]);
                         int fd = open(file, O_RDONLY);
                         if(fd < 0){
                             printf("Unable to open file.\n");
@@ -119,7 +139,8 @@ int main(){
                                         (size > 2 ? param[2] : NULL), (size > 3 ? param[3] : NULL),
                                         (size > 4 ? param[4] : NULL) , (size > 5 ? param[5] : NULL),
                                         (size > 6 ? param[6] : NULL), (size > 7 ? param[7] : NULL), 
-                                        (size > 8 ? param[8] : NULL), (size > 9 ? param[9] : NULL), NULL};
+                                        (size > 8 ? param[8] : NULL), (size > 9 ? param[9] : NULL),
+                                        NULL};
                     execvp(arg[0], arg);
                     printf("fin hijo\n");
                     return 0;
