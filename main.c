@@ -138,21 +138,24 @@ int main(){
                     }else if(tube){
                         int tubo[2];
                         pipe(tubo);
-                        /*
-                        if(dup2(fd, STDOUT_FILENO) < 0) {
-                            printf("Unable to duplicate file descriptor.");
+                        if(dup2(tubo[1], STDOUT_FILENO) < 0) {
+                            printf("Unable to duplicate file descriptor of pipe.");
                             return 0;
-                        }*/
+                        }
+                        if(dup2(tubo[0], STDIN_FILENO) < 0) {
+                            printf("Unable to duplicate file descriptor of pipe.");
+                            return 0;
+                        }
                         pid2 = fork();
                         if(pid2 < 0){
                             printf("Error al crear el hijo del hijo\n");
                             return 0;
                         }
                     }
-                    if(pid2){
-                        printf("hijo pipe\n");
+                    if(pid2 > 0){ //hijo
                         if(tube){
                             size = tube;
+                            close(ordinary_pipe[0]);
                         }
                         char *const arg[] = {(size ? param[0] : NULL), (size > 1 ? param[1] : NULL),
                                             (size > 2 ? param[2] : NULL), (size > 3 ? param[3] : NULL),
@@ -162,9 +165,9 @@ int main(){
                                             NULL};
                         wait(NULL);
                         execvp(arg[0], arg);
-                    }else{
-                        size -= tube - 1;
-                        printf("hijo del hijo pipe\n");
+                    }else{ //hijo del hijo
+                        size -= (tube + 1);
+                        close(ordinary_pipe[1]);
                         char *const arg[] = {(size ? param[1 + tube] : NULL), (size > 1 ? param[2 + tube] : NULL),
                                             (size > 2 ? param[3 + tube] : NULL), (size > 3 ? param[4 + tube] : NULL),
                                             (size > 4 ? param[5 + tube] : NULL) , (size > 5 ? param[6 + tube] : NULL),
