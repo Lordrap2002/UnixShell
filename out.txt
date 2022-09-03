@@ -1,10 +1,10 @@
-total 49
+total 69
 -rwxrwxrwx 1 lordrap2002 lordrap2002    87 Aug 28 17:40 Makefile
 -rwxrwxrwx 1 lordrap2002 lordrap2002    13 Aug 29 01:12 README.md
--rwxrwxrwx 1 lordrap2002 lordrap2002  8364 Sep  2 11:58 history.dat
--rwxrwxrwx 1 lordrap2002 lordrap2002     2 Sep  2 11:56 log.txt
--rwxrwxrwx 1 lordrap2002 lordrap2002  6024 Sep  2 11:58 main.c
--rwxrwxrwx 1 lordrap2002 lordrap2002  7504 Sep  2 11:58 main.o
--rwxrwxrwx 1 lordrap2002 lordrap2002   595 Sep  2 11:54 out.txt
+-rwxrwxrwx 1 lordrap2002 lordrap2002 18360 Sep  3 12:05 history.dat
+-rwxrwxrwx 1 lordrap2002 lordrap2002     2 Sep  3 12:00 log.txt
+-rwxrwxrwx 1 lordrap2002 lordrap2002  8202 Sep  3 12:04 main.c
+-rwxrwxrwx 1 lordrap2002 lordrap2002  9032 Sep  3 12:04 main.o
+-rwxrwxrwx 1 lordrap2002 lordrap2002   595 Sep  2 11:58 out.txt
 -rwxrwxrwx 1 lordrap2002 lordrap2002    90 Sep  2 11:54 prueba.txt
--rwxrwxrwx 1 lordrap2002 lordrap2002 16824 Sep  2 11:58 unixshell
+-rwxrwxrwx 1 lordrap2002 lordrap2002 21120 Sep  3 12:04 unixshell

@@ -20,7 +20,7 @@ int abrirHistorial(){
 }
 
 int main(){
-    int flag = 1, pid, i, record, tube, in, out, size, back;
+    int flag = 1, pid, i, record, tube, in, out, size, back, tubo;
     FILE *history, *log;
     record = abrirHistorial();
     while(flag){
@@ -87,9 +87,6 @@ int main(){
                     }
                 }
                 //crear tubo
-                if(tube){
-                }
-                int tubo;
                 char *mitubo = "/tmp/mitubo";
                 if(tube){
                     mkfifo(mitubo, 0666);
@@ -100,7 +97,6 @@ int main(){
                     printf("Error al crear el hijo\n");
                     return 0;
                 }else if(pid > 0){//papá
-                    printf("papa\n");
                     record++;
                     //guardar historial
                     history = fopen("history.dat", "ab");
@@ -109,15 +105,13 @@ int main(){
                     fclose(history);
                     //esperar si hay &
                     if(!back){
-                        printf("espero\n");
                         wait(NULL);
                     }
                     if(tube){
+                        sleep(1);
                         unlink(mitubo);
                     }
-                    printf("fin papa\n");
                 }else{//hijo
-                    printf("hijo\n");
                     int pid2 = 1;
                     if(out){
                         size -= 2;
@@ -176,7 +170,6 @@ int main(){
                         char buf[7];
                         while (tubo == -1) {
                             tubo = open(mitubo, O_RDONLY);
-                            sleep(1);
                         }
                         read(tubo, buf, 7);
                         if(dup2(tubo, STDIN_FILENO) < 0) {
@@ -191,7 +184,6 @@ int main(){
                                             (size > 8 ? param[9 + tube] : NULL), NULL};
                         execvp(arg[0], arg);
                     }
-                    printf("fin hijo\n");
                     return 0;
                 }
             }else{
