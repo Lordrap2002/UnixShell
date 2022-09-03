@@ -5,6 +5,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 int abrirHistorial(){
     int record;
@@ -85,13 +86,20 @@ int main(){
                         continue;
                     }
                 }
+                //crear tubo
+                if(tube){
+                }
+                int tubo;
+                char *mitubo = "/tmp/mitubo";
+                if(tube){
+                    mkfifo(mitubo, 0666);
+                }
                 //crear hijo
                 pid = fork();
                 if(pid < 0){
                     printf("Error al crear el hijo\n");
                     return 0;
-                }else if(pid > 0){
-                    //papá
+                }else if(pid > 0){//papá
                     printf("papa\n");
                     record++;
                     //guardar historial
@@ -104,9 +112,11 @@ int main(){
                         printf("espero\n");
                         wait(NULL);
                     }
+                    if(tube){
+                        unlink(mitubo);
+                    }
                     printf("fin papa\n");
-                }else{
-                    //hijo
+                }else{//hijo
                     printf("hijo\n");
                     int pid2 = 1;
                     if(out){
@@ -136,16 +146,6 @@ int main(){
                             return 0;
                         }
                     }else if(tube){
-                        int tubo[2];
-                        pipe(tubo);
-                        if(dup2(tubo[1], STDOUT_FILENO) < 0) {
-                            printf("Unable to duplicate file descriptor of pipe.");
-                            return 0;
-                        }
-                        if(dup2(tubo[0], STDIN_FILENO) < 0) {
-                            printf("Unable to duplicate file descriptor of pipe.");
-                            return 0;
-                        }
                         pid2 = fork();
                         if(pid2 < 0){
                             printf("Error al crear el hijo del hijo\n");
@@ -155,7 +155,13 @@ int main(){
                     if(pid2 > 0){ //hijo
                         if(tube){
                             size = tube;
-                            close(ordinary_pipe[0]);
+                            tubo = open(mitubo, O_WRONLY);
+                            write(tubo, "prueba", sizeof("prueba"));
+                            if(dup2(tubo, STDOUT_FILENO) < 0) {
+                                printf("Unable to duplicate file descriptor of pipe hijo1.");
+                                return 0;
+                            }
+                            close(tubo);
                         }
                         char *const arg[] = {(size ? param[0] : NULL), (size > 1 ? param[1] : NULL),
                                             (size > 2 ? param[2] : NULL), (size > 3 ? param[3] : NULL),
@@ -163,11 +169,21 @@ int main(){
                                             (size > 6 ? param[6] : NULL), (size > 7 ? param[7] : NULL), 
                                             (size > 8 ? param[8] : NULL), (size > 9 ? param[9] : NULL),
                                             NULL};
-                        wait(NULL);
                         execvp(arg[0], arg);
                     }else{ //hijo del hijo
                         size -= (tube + 1);
-                        close(ordinary_pipe[1]);
+                        tubo = -1;
+                        char buf[7];
+                        while (tubo == -1) {
+                            tubo = open(mitubo, O_RDONLY);
+                            sleep(1);
+                        }
+                        read(tubo, buf, 7);
+                        if(dup2(tubo, STDIN_FILENO) < 0) {
+                            printf("Unable to duplicate file descriptor of pipe hijo2.");
+                            return 0;
+                        }
+                        close(tubo);    
                         char *const arg[] = {(size ? param[1 + tube] : NULL), (size > 1 ? param[2 + tube] : NULL),
                                             (size > 2 ? param[3 + tube] : NULL), (size > 3 ? param[4 + tube] : NULL),
                                             (size > 4 ? param[5 + tube] : NULL) , (size > 5 ? param[6 + tube] : NULL),
