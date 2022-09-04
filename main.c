@@ -36,7 +36,7 @@ int main(){
                 param[size][i++] = c;
                 scanf("%c", &c);
             }
-            if(i){
+            if(i){//terminar cadena y verificar comandos especiales
                 param[size][i] = '\0';
                 if(!strcmp("&", param[size])){
                     size--;
@@ -54,18 +54,17 @@ int main(){
                 scanf("%c", &c);
             }
         }
-        if(size){
-            if(strcmp("exit", param[0])){
-                //verificar historial
-                if(!strcmp("!!", param[0])){
-                    if(record){
+        if(size){ //verificar si se ingresaron comandos
+            if(strcmp("exit", param[0])){ //verificar salida
+                if(!strcmp("!!", param[0])){ //verificar historial
+                    if(record){ //traer comando previo
                         history = fopen("history.dat", "rb");
                         fseek(history, -sizeof(param) - sizeof(int), SEEK_END);
                         fread(&size, sizeof(int), 1, history);
                         fread(param, sizeof(param), 1, history);
                         fclose(history);
                         printf("prompt>");
-                        for(i = 0; i < size; i++){
+                        for(i = 0; i < size; i++){ //verificar comandos especiales
                             printf("%s ", param[i]);
                             if(!strcmp("&", param[i])){
                                 back++;
@@ -86,9 +85,8 @@ int main(){
                         continue;
                     }
                 }
-                //crear tubo
                 char *mitubo = "/tmp/mitubo";
-                if(tube){
+                if(tube){ //crear tubo
                     mkfifo(mitubo, 0666);
                 }
                 //crear hijo
@@ -98,22 +96,21 @@ int main(){
                     return 0;
                 }else if(pid > 0){//papá
                     record++;
-                    //guardar historial
+                    //guardar comando en el historial
                     history = fopen("history.dat", "ab");
                     fwrite(&size, sizeof(int), 1, history);
                     fwrite(param, sizeof(param), 1, history);
                     fclose(history);
-                    //esperar si hay &
-                    if(!back){
+                    if(!back){ //esperar si no hay &
                         wait(NULL);
                     }
-                    if(tube){
+                    if(tube){ //eliminar tubo si se creo antes
                         sleep(1);
                         unlink(mitubo);
                     }
                 }else{//hijo
                     int pid2 = 1;
-                    if(out){
+                    if(out){ // si hubo comando > cambiar file descriptor
                         size -= 2;
                         char file[22] = "./";
                         strcat(file, param[out + 1]);
@@ -126,7 +123,8 @@ int main(){
                             printf("Unable to duplicate file descriptor.");
                             return 0;
                         }
-                    }else if(in){
+                        close(fd);
+                    }else if(in){ // si hubo comando < cambiar file descriptor
                         size -= 2;
                         char file[22] = "./";
                         strcat(file, param[in + 1]);
@@ -139,15 +137,16 @@ int main(){
                             printf("Unable to duplicate file descriptor.\n");
                             return 0;
                         }
-                    }else if(tube){
+                        close(fd);
+                    }else if(tube){ //crear nuevo hijo si hubo comando |
                         pid2 = fork();
                         if(pid2 < 0){
                             printf("Error al crear el hijo del hijo\n");
                             return 0;
                         }
                     }
-                    if(pid2 > 0){ //hijo
-                        if(tube){
+                    if(pid2 > 0){ //hijo original
+                        if(tube){ //si hubo comando | cambiar file descriptor
                             size = tube;
                             tubo = open(mitubo, O_WRONLY);
                             write(tubo, "prueba", sizeof("prueba"));
@@ -157,6 +156,7 @@ int main(){
                             }
                             close(tubo);
                         }
+                        //crear arreglo con comandos y ejecutar
                         char *const arg[] = {(size ? param[0] : NULL), (size > 1 ? param[1] : NULL),
                                             (size > 2 ? param[2] : NULL), (size > 3 ? param[3] : NULL),
                                             (size > 4 ? param[4] : NULL) , (size > 5 ? param[5] : NULL),
@@ -164,7 +164,7 @@ int main(){
                                             (size > 8 ? param[8] : NULL), (size > 9 ? param[9] : NULL),
                                             NULL};
                         execvp(arg[0], arg);
-                    }else{ //hijo del hijo
+                    }else{ //hijo del hijo (si hubo comando |)
                         size -= (tube + 1);
                         tubo = -1;
                         char buf[7];
@@ -176,7 +176,8 @@ int main(){
                             printf("Unable to duplicate file descriptor of pipe hijo2.");
                             return 0;
                         }
-                        close(tubo);    
+                        close(tubo);
+                        //crear arreglo con comandos y ejecutar
                         char *const arg[] = {(size ? param[1 + tube] : NULL), (size > 1 ? param[2 + tube] : NULL),
                                             (size > 2 ? param[3 + tube] : NULL), (size > 3 ? param[4 + tube] : NULL),
                                             (size > 4 ? param[5 + tube] : NULL) , (size > 5 ? param[6 + tube] : NULL),
@@ -198,10 +199,3 @@ int main(){
     printf("prompt terminated\n");
     return 0;
 }
-
-/*
-for(i = 0; i < 10; i++){
-    printf("%s ", param[i]);
-}
-printf("\n");
-*/

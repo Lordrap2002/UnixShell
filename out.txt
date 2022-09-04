@@ -1,6 +1,13 @@
-total 69
--rwxrwxrwx 1 lordrap2002 lordrap2002    87 Aug 28 17:40 Makefile
--rwxrwxrwx 1 lordrap2002 lordrap2002    13 Aug 29 01:12 README.md
+Makefile
+README.md
+history.dat
+log.txt
+main.c
+main.o
+out.txt
+prueba.txt
+unixshell
+wx 1 lordrap2002 lordrap2002    13 Aug 29 01:12 README.md
 -rwxrwxrwx 1 lordrap2002 lordrap2002 18360 Sep  3 12:05 history.dat
 -rwxrwxrwx 1 lordrap2002 lordrap2002     2 Sep  3 12:00 log.txt
 -rwxrwxrwx 1 lordrap2002 lordrap2002  8202 Sep  3 12:04 main.c
